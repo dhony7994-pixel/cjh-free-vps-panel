@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Hosting - Demo Server</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-cloud"></i> play<span>.</span>hosting
+            </div>
+            
+            <div class="menu-category">YOUR SERVER</div>
+            <ul class="menu-list">
+                <li class="active"><a href="#"><i class="fa-solid fa-terminal"></i> Console</a></li>
+                <li><a href="#"><i class="fa-solid fa-folder"></i> Files</a></li>
+                <li><a href="#"><i class="fa-solid fa-puzzle-piece"></i> Marketplace</a></li>
+            </ul>
+
+            <div class="menu-category">TOOLS</div>
+            <ul class="menu-list">
+                <li><a href="#"><i class="fa-solid fa-code"></i> Software</a></li>
+                <li><a href="#"><i class="fa-solid fa-box"></i> Modpacks</a></li>
+                <li><a href="#"><i class="fa-solid fa-users"></i> Subusers</a></li>
+            </ul>
+
+            <div class="menu-category">CONFIG</div>
+            <ul class="menu-list">
+                <li><a href="#"><i class="fa-solid fa-network-wired"></i> Network</a></li>
+                <li><a href="#"><i class="fa-solid fa-sliders"></i> Startup</a></li>
+                <li><a href="#"><i class="fa-solid fa-gear"></i> Settings</a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <p>Need a premium server?</p>
+                <small>Use ☁️ Lilypad</small>
+            </div>
+            
+            <div class="sidebar-bottom-icons">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-user"></i>
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <h1>Demo Server</h1>
+                <div class="action-buttons">
+                    <button class="btn start"><i class="fa-solid fa-play"></i> Start</button>
+                    <button class="btn restart"><i class="fa-solid fa-rotate-right"></i> Restart</button>
+                    <button class="btn stop"><i class="fa-solid fa-stop"></i> Stop</button>
+                </div>
+            </header>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Console Screen -->
+                <div class="console-box">
+                    <div class="console-output">
+                        <!-- Server logs will appear here -->
+                    </div>
+                    <div class="console-input-bar">
+                        <span>»</span>
+                        <input type="text" placeholder="Type a command without the /">
+                    </div>
+                </div>
+
+                <!-- Status Cards Right -->
+                <div class="status-cards-column">
+                    <div class="card info-card">
+                        <i class="fa-solid fa-wifi"></i>
+                        <div>
+                            <small>Address (click to copy)</small>
+                            <span class="value">vroom.play.hosting</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-clock"></i>
+                        <div>
+                            <small>Uptime</small>
+                            <span class="value">Offline</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-microchip"></i>
+                        <div>
+                            <small>CPU Usage</small>
+                            <span class="value">Offline</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-memory"></i>
+                        <div>
+                            <small>RAM Usage</small>
+                            <span class="value">Offline</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-hard-drive"></i>
+                        <div>
+                            <small>Storage Usage</small>
+                            <span class="value">719.79 MiB / 10 GiB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Stats Graphs -->
+            <div class="bottom-stats-grid">
+                <div class="stat-box">
+                    <h3>CPU Usage</h3>
+                    <div class="graph-placeholder">200.00%</div>
+                </div>
+                <div class="stat-box">
+                    <h3>RAM Usage</h3>
+                    <div class="graph-placeholder">3500MiB</div>
+                </div>
+                <div class="stat-box">
+                    <h3>Network Usage</h3>
+                    <div class="graph-placeholder">1 Bytes</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+                                                        </html>

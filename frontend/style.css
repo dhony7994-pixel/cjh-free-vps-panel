@@ -265,4 +265,157 @@ button:disabled {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.welcome h1 {
+    margin: 0 0 8px;
+    font-size: 25px;
+    overflow-wrap: anywhere;
+}
+
+.secondary {
+    flex-shrink: 0;
+    width: auto;
+    min-height: 40px;
+    margin: 0;
+    padding: 8px 15px;
+    border-color: var(--border);
+    background: #20334a;
+    color: var(--text);
+}
+
+.secondary:hover:not(:disabled) {
+    background: #2a425e;
+}
+
+/* VPS section */
+
+.server-icon {
+    margin-bottom: 8px;
+    color: var(--blue);
+    font-size: 38px;
+}
+
+#vps-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+#vps-list .card {
+    margin: 0;
+    padding: 22px;
+}
+
+.vps-card h2 {
+    margin-top: 0;
+    margin-bottom: 14px;
+}
+
+.vps-card p {
+    margin: 8px 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* Footer */
+
+.footer {
+    margin-top: 28px;
+    padding-bottom: 20px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Mobile layout */
+
+@media (max-width: 520px) {
+    .topbar {
+        padding: 14px 4%;
+    }
+
+    .logo {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: 21px;
+    }
+
+    .brand {
+        gap: 9px;
+    }
+
+    .brand h2 {
+        font-size: 14px;
+    }
+
+    .brand small {
+        font-size: 9px;
+        letter-spacing: 1px;
+    }
+
+    .status {
+        font-size: 10px;
+    }
+
+    .container {
+        width: 92%;
+        margin: 26px auto;
+    }
+
+    .card {
+        padding: 20px;
+        border-radius: 14px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .welcome {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .welcome h1 {
+        font-size: 22px;
+    }
+
+    .welcome .secondary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 350px) {
+    .brand small {
+        letter-spacing: 0;
+    }
+
+    .status {
+        white-space: normal;
+        text-align: right;
+    }
+
+    .card {
+        padding: 16px;
+    }
+
+    button {
+        padding: 11px;
+        font-size: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+    }
+    }

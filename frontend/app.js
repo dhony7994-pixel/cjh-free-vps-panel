@@ -223,3 +223,22 @@ async function logout() {
     $("password").value = "";
     $("confirm-password").value = "";
       }
+function showLogin() {
+    $("dashboard").hidden = true;
+    $("auth-section").hidden = false;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    $("auth-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        authenticate();
+    });
+
+    $("switch-button").addEventListener("click", toggleAuth);
+
+    $("create-vps-button").addEventListener("click", createVPS);
+
+    $("logout-button").addEventListener("click", logout);
+
+    showLogin();
+});

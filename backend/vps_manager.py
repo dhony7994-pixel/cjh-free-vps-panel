@@ -1,5 +1,4 @@
 import shutil
-import subprocess
 
 SUPPORTED_PROVIDERS = {
     "docker",
@@ -32,20 +31,19 @@ def get_available_providers():
             "description": "Container environment; not a full virtual machine.",
             "available": docker_available,
             "status": (
-                "detected"
-                if docker_available
-                else "not_installed"
+                "detected" if docker_available else "not_installed"
             ),
         },
         {
             "id": "kvm",
             "name": "KVM Virtual Machine",
-            "description": "Virtual machine requiring host virtualization and configuration.",
+            "description": (
+                "Virtual machine requiring host virtualization "
+                "and additional configuration."
+            ),
             "available": kvm_available,
             "status": (
-                "detected"
-                if kvm_available
-                else "not_configured"
+                "detected" if kvm_available else "not_configured"
             ),
         },
         {
@@ -54,16 +52,17 @@ def get_available_providers():
             "description": "Terminal session; not a standalone VPS.",
             "available": sshx_available,
             "status": (
-                "detected"
-                if sshx_available
-                else "not_installed"
+                "detected" if sshx_available else "not_installed"
             ),
         },
     ]
 
 
 def get_provider(provider: str):
-    """Return one provider's information."""
+    """Return information about a supported provider."""
+
+    if not isinstance(provider, str):
+        raise ValueError("Invalid provider.")
 
     provider = provider.strip().lower()
 
@@ -79,19 +78,12 @@ def get_provider(provider: str):
 
 def create_vps(user_id: int, provider: str):
     """
-    VPS provisioning is intentionally disabled.
-
-    Detecting an installed command does not mean the host is
-    securely configured to provision isolated customer instances.
+    Provisioning is disabled until secure infrastructure
+    configuration and instance isolation are implemented.
     """
 
-    if not isinstance(user_id, int) or user_id <= 0:
+    if not isinstance(user_id, int) or isinstance(user_id, bool) or user_id <= 0:
         raise ValueError("Invalid user ID.")
-
-    provider = provider.strip().lower()
-
-    if provider not in SUPPORTED_PROVIDERS:
-        raise ValueError("Unsupported provider.")
 
     info = get_provider(provider)
 

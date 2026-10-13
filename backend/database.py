@@ -5,7 +5,8 @@ from contextlib import contextmanager
 
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
@@ -19,19 +20,23 @@ DB_PATH = Path(DATABASE_URL.replace("sqlite:///", "", 1))
 
 
 def init_db():
+    """Create the database directory and required tables."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     with get_db() as db:
-        db.execute("""
+        db.execute(
+            """
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+            """
+        )
 
-        db.execute("""
+        db.execute(
+            """
             CREATE TABLE IF NOT EXISTS vps_instances (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
@@ -42,11 +47,13 @@ def init_db():
                     REFERENCES users(id)
                     ON DELETE CASCADE
             )
-        """)
+            """
+        )
 
 
 @contextmanager
 def get_db():
+    """Open a database connection and safely commit or roll back."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     connection = sqlite3.connect(

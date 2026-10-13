@@ -2,54 +2,64 @@ const API = "/api";
 
 let isRegisterMode = false;
 let currentUser = null;
+let isAuthenticating = false;
+let isCreatingVPS = false;
 
 const $ = (id) => document.getElementById(id);
 
-// Show success or error messages
 function showMessage(id, message, error = false) {
     const element = $(id);
-
     if (!element) return;
 
     element.textContent = message;
     element.style.color = error ? "#fca5a5" : "#6ee7b7";
 }
 
-// Set login or register mode
 function setAuthMode(registerMode) {
     isRegisterMode = registerMode;
 
-    $("auth-title").textContent = isRegisterMode
-        ? "Create Account"
-        : "Welcome Back";
+    const title = $("auth-title");
+    const authButton = $("auth-button");
+    const switchText = $("switch-text");
+    const switchButton = $("switch-button");
+    const registerFields = $("register-fields");
+    const password = $("password");
 
-    $("auth-button").textContent = isRegisterMode
-        ? "Register"
-        : "Login";
+    if (title) {
+        title.textContent = registerMode ? "Create Account" : "Welcome Back";
+    }
 
-    $("switch-text").textContent = isRegisterMode
-        ? "Already have an account?"
-        : "Don't have an account?";
+    if (authButton) {
+        authButton.textContent = registerMode ? "Register" : "Login";
+    }
 
-    $("switch-button").textContent = isRegisterMode
-        ? "Login"
-        : "Register";
+    if (switchText) {
+        switchText.textContent = registerMode
+            ? "Already have an account?"
+            : "Don't have an account?";
+    }
 
-    $("register-fields").hidden = !isRegisterMode;
+    if (switchButton) {
+        switchButton.textContent = registerMode ? "Login" : "Register";
+    }
 
-    $("password").autocomplete = isRegisterMode
-        ? "new-password"
-        : "current-password";
+    if (registerFields) {
+        registerFields.hidden = !registerMode;
+    }
+
+    if (password) {
+        password.autocomplete = registerMode
+            ? "new-password"
+            : "current-password";
+    }
 
     showMessage("auth-message", "");
 }
 
-// Toggle login/register
 function toggleAuth() {
     setAuthMode(!isRegisterMode);
 }
 
-// API request helper
 async function request(path, options = {}) {
     const response = await fetch(API + path, {
         ...options,
@@ -64,27 +74,37 @@ async function request(path, options = {}) {
 
     if (!response.ok) {
         throw new Error(
-            data.detail || "Request failed. Please try again."
+            typeof data.detail === "string"
+                ? data.detail
+                : "Request failed. Please try again."
         );
     }
 
     return data;
 }
 
-// Login and registration
-async function authenticate() {
-    const button = $("auth-button");
-    const username = $("username").value.trim();
-    const password = $("password").value;
+function setDashboardVisible(visible) {
+    const authSection = $("auth-section");
+    const dashboard = $("dashboard");
 
-    if (!username || !password) {
-        showMessage(
-            "auth-message",
-            "Username and password are required.",
-            true
-        );
+    if (authSection) authSection.hidden = visible;
+    if (dashboard) dashboard.hidden = !visible;
+}
+
+async function authenticate() {
+    if (isAuthenticating) return;
+
+    const button = $("auth-button");
+    const usernameField = $("username");
+    const passwordField = $("password");
+
+    if (!usernameField || !passwordField) {
+        showMessage("auth-message", "Login form is incomplete.", true);
         return;
     }
+
+    const username = usernameField.value.trim();
+    const password = passwordField.value;
 
     if (!/^[A-Za-z0-9_]{3,32}$/.test(username)) {
         showMessage(
@@ -95,9 +115,14 @@ async function authenticate() {
         return;
     }
 
-    if (isRegisterMode) {
-        const confirmPassword = $("confirm-password").value;
+    if (!password) {
+        showMessage("auth-message", "Password is required.", true);
+        return;
+    }
 
+    const confirmField = $("confirm-password");
+
+    if (isRegisterMode) {
         if (password.length < 10 || password.length > 128) {
             showMessage(
                 "auth-message",
@@ -107,68 +132,69 @@ async function authenticate() {
             return;
         }
 
-        if (password !== confirmPassword) {
+        if (!confirmField) {
             showMessage(
                 "auth-message",
-                "Passwords do not match.",
+                "Registration form is incomplete.",
                 true
             );
             return;
         }
+
+        if (password !== confirmField.value) {
+            showMessage("auth-message", "Passwords do not match.", true);
+            return;
+        }
     }
 
-    button.disabled = true;
-    showMessage("auth-message", "");
+    isAuthenticating = true;
+    if (button) button.disabled = true;
 
     try {
-        // Registration
         if (isRegisterMode) {
             await request("/register", {
                 method: "POST",
                 body: JSON.stringify({
-                    username: username,
-                    password: password,
-                    confirm_password: $("confirm-password").value
+                    username,
+                    password,
+                    confirm_password: confirmField.value
                 })
             });
 
-            // Switch back to login mode correctly
             setAuthMode(false);
-
-            $("password").value = "";
-            $("confirm-password").value = "";
+            passwordField.value = "";
+            if (confirmField) confirmField.value = "";
 
             showMessage(
                 "auth-message",
                 "Account created successfully. Please log in."
             );
-
             return;
         }
 
-        // Login
         const result = await request("/login", {
             method: "POST",
-            body: JSON.stringify({
-                username: username,
-                password: password
-            })
+            body: JSON.stringify({ username, password })
         });
 
-        currentUser = result.user;
-
-        if (!currentUser) {
-            throw new Error("Login response was invalid.");
+        if (
+            !result.user ||
+            typeof result.user.id !== "number" ||
+            typeof result.user.username !== "string"
+        ) {
+            throw new Error("Invalid login response.");
         }
 
-        $("auth-section").hidden = true;
-        $("dashboard").hidden = false;
+        currentUser = result.user;
+        setDashboardVisible(true);
 
-        $("welcome-user").textContent =
-            "Welcome, " + currentUser.username;
+        const welcome = $("welcome-user");
+        if (welcome) {
+            welcome.textContent = "Welcome, " + currentUser.username;
+        }
 
-        $("password").value = "";
-        $("confirm-password").value = "";
+        passwordField.value = "";
+        if (confirmField) confirmField.value = "";
 
         await loadVPS();
 
@@ -179,33 +205,34 @@ async function authenticate() {
             true
         );
     } finally {
-        button.disabled = false;
+        isAuthenticating = false;
+        if (button) button.disabled = false;
     }
 }
 
-// Load the logged-in user's VPS instances
 async function loadVPS() {
     const list = $("vps-list");
+    if (!list) {
+        showMessage("vps-message", "VPS list element is missing.", true);
+        return;
+    }
 
     list.replaceChildren();
 
     try {
         const result = await request("/vps");
-        const instances = result.instances || [];
+        const instances = Array.isArray(result.instances)
+            ? result.instances
+            : [];
 
-        // Keep the VPS creation form visible.
-        // Only hide the empty-state message when instances exist.
         const emptyMessage = $("empty-message");
-
         if (emptyMessage) {
             emptyMessage.hidden = instances.length > 0;
         }
 
-        // Disable creation if the account already has a VPS.
         const createButton = $("create-vps-button");
-
         if (createButton) {
-            createButton.disabled = instances.length > 0;
+            createButton.disabled = instances.length > 0 || isCreatingVPS;
             createButton.textContent = instances.length > 0
                 ? "VPS Limit Reached"
                 : "Create VPS";
@@ -239,27 +266,33 @@ async function loadVPS() {
     }
 }
 
-// Request VPS creation
 async function createVPS() {
+    if (isCreatingVPS) return;
+
+    const providerField = $("provider");
     const button = $("create-vps-button");
 
-    if (button && button.disabled) return;
+    if (!providerField) {
+        showMessage("vps-message", "Select a provider first.", true);
+        return;
+    }
 
-    showMessage("vps-message", "Checking VPS provisioning service...");
-
+    isCreatingVPS = true;
     if (button) button.disabled = true;
 
-    try {
-        const provider = $("provider").value;
+    showMessage("vps-message", "Sending request...");
 
+    try {
         const result = await request("/vps/create", {
             method: "POST",
-            body: JSON.stringify({ provider: provider })
+            body: JSON.stringify({
+                provider: providerField.value
+            })
         });
 
         showMessage(
             "vps-message",
-            result.message || "VPS creation request submitted."
+            result.message || "Request completed."
         );
 
         await loadVPS();
@@ -271,14 +304,14 @@ async function createVPS() {
             true
         );
     } finally {
+        isCreatingVPS = false;
         if (button) button.disabled = false;
+        await loadVPS();
     }
 }
 
-// Logout
 async function logout() {
     const button = $("logout-button");
-
     if (button) button.disabled = true;
 
     try {
@@ -290,29 +323,77 @@ async function logout() {
         console.error("Logout request failed:", error);
     } finally {
         currentUser = null;
+        setDashboardVisible(false);
 
-        $("dashboard").hidden = true;
-        $("auth-section").hidden = false;
-
-        $("username").value = "";
-        $("password").value = "";
-        $("confirm-password").value = "";
+        if ($("username")) $("username").value = "";
+        if ($("password")) $("password").value = "";
+        if ($("confirm-password")) $("confirm-password").value = "";
 
         setAuthMode(false);
-
         if (button) button.disabled = false;
     }
 }
 
-// Show login page on initial load
-function showLogin() {
-    $("dashboard").hidden = true;
-    $("auth-section").hidden = false;
+async function restoreSession() {
+    try {
+        const result = await request("/vps");
+
+        // The VPS endpoint requires authentication.
+        // A successful response confirms the session is active.
+        currentUser = { username: "User" };
+
+        setDashboardVisible(true);
+
+        // The API currently does not expose a separate session endpoint.
+        // Avoid inventing a username; show a generic welcome message.
+        const welcome = $("welcome-user");
+        if (welcome) welcome.textContent = "Welcome back";
+
+        const list = $("vps-list");
+        if (list) {
+            const instances = Array.isArray(result.instances)
+                ? result.instances
+                : [];
+
+            list.replaceChildren();
+
+            for (const instance of instances) {
+                const card = document.createElement("div");
+                card.className = "card vps-card";
+
+                const title = document.createElement("h2");
+                title.textContent = "VPS #" + instance.id;
+
+                const provider = document.createElement("p");
+                provider.textContent = "Type: " + instance.provider;
+
+                const status = document.createElement("p");
+                status.textContent = "Status: " + instance.status;
+
+                card.append(title, provider, status);
+                list.appendChild(card);
+            }
+
+            const emptyMessage = $("empty-message");
+            if (emptyMessage) {
+                emptyMessage.hidden = instances.length > 0;
+            }
+
+            const createButton = $("create-vps-button");
+            if (createButton) {
+                createButton.disabled = instances.length > 0;
+                createButton.textContent = instances.length > 0
+                    ? "VPS Limit Reached"
+                    : "Create VPS";
+            }
+        }
+    } catch {
+        currentUser = null;
+        setDashboardVisible(false);
+    }
 }
 
-// Connect the page buttons
 document.addEventListener("DOMContentLoaded", () => {
-    // Support both form submission and the existing HTML button.
     const authForm = $("auth-form");
 
     if (authForm) {
@@ -322,25 +403,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // The HTML currently uses inline onclick handlers.
-    // Add listeners only if those handlers are not present.
     const switchButton = $("switch-button");
-
     if (switchButton && !switchButton.hasAttribute("onclick")) {
         switchButton.addEventListener("click", toggleAuth);
     }
 
     const createButton = $("create-vps-button");
-
     if (createButton && !createButton.hasAttribute("onclick")) {
         createButton.addEventListener("click", createVPS);
     }
 
     const logoutButton = $("logout-button");
-
     if (logoutButton && !logoutButton.hasAttribute("onclick")) {
         logoutButton.addEventListener("click", logout);
     }
 
-    showLogin();
+    setAuthMode(false);
+    restoreSession();
 });

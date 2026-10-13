@@ -12,7 +12,6 @@ from starlette.middleware.sessions import SessionMiddleware
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
-# Load environment variables before reading settings or importing backend modules.
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "")
@@ -59,7 +58,7 @@ class LoginRequest(BaseModel):
 
 
 class CreateVPSRequest(BaseModel):
-    provider: str
+    provider: str = Field(min_length=1, max_length=20)
 
 
 def current_user(request: Request):
@@ -71,7 +70,11 @@ def current_user(request: Request):
             detail="Please log in first.",
         )
 
-    if not isinstance(user.get("id"), int):
+    if (
+        not isinstance(user.get("id"), int)
+        or isinstance(user.get("id"), bool)
+        or user["id"] <= 0
+    ):
         raise HTTPException(
             status_code=401,
             detail="Invalid session. Please log in again.",
@@ -117,7 +120,7 @@ def register(data: RegisterRequest):
         raise HTTPException(
             status_code=400,
             detail=str(exc),
-        )
+        ) from exc
 
     except sqlite3.IntegrityError:
         raise HTTPException(
@@ -188,7 +191,6 @@ def list_vps(request: Request):
 @app.post("/api/vps/create")
 def create_vps(data: CreateVPSRequest, request: Request):
     user = current_user(request)
-
     provider = data.provider.strip().lower()
 
     if provider not in {"docker", "kvm", "sshx"}:
@@ -197,8 +199,6 @@ def create_vps(data: CreateVPSRequest, request: Request):
             detail="Unsupported VPS provider.",
         )
 
-    # Fail safely: real VPS provisioning is not implemented yet.
-    # Do not insert a fake VPS record or claim that one was created.
     with get_db() as db:
         existing = db.execute(
             """

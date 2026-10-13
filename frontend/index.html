@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CJH FREE VPS</title>
+    <meta name="theme-color" content="#080d18">
+    <title>CJH FREE VPS | Chachaji Hosting</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -21,50 +22,68 @@
 
     <main class="container">
 
+        <!-- Login / Register -->
         <section id="auth-section" class="card">
             <h1 id="auth-title">Welcome Back</h1>
             <p class="muted">Sign in to your CJH account.</p>
 
-            <div id="register-fields" hidden>
-                <label for="confirm-password">Confirm Password</label>
-                <input id="confirm-password"
-                       type="password"
-                       minlength="10"
-                       autocomplete="new-password"
-                       placeholder="Confirm password">
-            </div>
+            <form id="auth-form">
+                <label for="username">Username</label>
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    minlength="3"
+                    maxlength="32"
+                    autocomplete="username"
+                    placeholder="Enter username"
+                    required
+                >
 
-            <label for="username">Username</label>
-            <input id="username"
-                   type="text"
-                   minlength="3"
-                   maxlength="32"
-                   autocomplete="username"
-                   placeholder="Enter username">
+                <label for="password">Password</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    minlength="10"
+                    maxlength="128"
+                    autocomplete="current-password"
+                    placeholder="Enter password"
+                    required
+                >
 
-            <label for="password">Password</label>
-            <input id="password"
-                   type="password"
-                   minlength="10"
-                   maxlength="128"
-                   autocomplete="current-password"
-                   placeholder="Enter password">
+                <div id="register-fields" hidden>
+                    <label for="confirm-password">Confirm Password</label>
+                    <input
+                        id="confirm-password"
+                        name="confirm-password"
+                        type="password"
+                        minlength="10"
+                        maxlength="128"
+                        autocomplete="new-password"
+                        placeholder="Confirm password"
+                    >
+                </div>
 
-            <button id="auth-button" type="button" onclick="authenticate()">
-                Login
-            </button>
+                <button id="auth-button" type="submit">
+                    Login
+                </button>
+            </form>
 
-            <p id="auth-message" class="message" role="status"></p>
+            <p id="auth-message" class="message" role="status" aria-live="polite"></p>
 
             <p class="switch">
                 <span id="switch-text">Don't have an account?</span>
-                <button class="text-button"
-                        type="button"
-                        onclick="toggleAuth()"
-                        id="switch-button">Register</button>
+                <button
+                    class="text-button"
+                    type="button"
+                    id="switch-button"
+                    onclick="toggleAuth()"
+                >Register</button>
             </p>
         </section>
 
+        <!-- User Dashboard -->
         <section id="dashboard" hidden>
             <div class="welcome">
                 <div>
@@ -72,30 +91,45 @@
                     <h1>My VPS</h1>
                     <p id="welcome-user"></p>
                 </div>
-                <button class="secondary" onclick="logout()">Logout</button>
+
+                <button
+                    id="logout-button"
+                    class="secondary"
+                    type="button"
+                    onclick="logout()"
+                >Logout</button>
             </div>
 
+            <!-- VPS Creation -->
             <div id="empty-state" class="card">
                 <div class="server-icon">▣</div>
                 <h2>No VPS yet</h2>
                 <p class="muted">
-                    Create your first environment to get started.
+                    Select an environment to submit a VPS request.
                 </p>
 
                 <label for="provider">Environment Type</label>
-                <select id="provider">
+                <select id="provider" name="provider">
                     <option value="docker">Docker Environment</option>
                     <option value="kvm">KVM Virtual Machine</option>
                     <option value="sshx">SSHX Terminal</option>
                 </select>
 
-                <button type="button" onclick="createVPS()">
-                    CREATE VPS
-                </button>
+                <button
+                    id="create-vps-button"
+                    type="button"
+                    onclick="createVPS()"
+                >CREATE VPS</button>
 
-                <p id="vps-message" class="message" role="status"></p>
+                <p
+                    id="vps-message"
+                    class="message"
+                    role="status"
+                    aria-live="polite"
+                ></p>
             </div>
 
+            <!-- Existing VPS instances -->
             <div id="vps-list"></div>
 
             <p class="footer">CJH FREE VPS · Chachaji Hosting</p>
@@ -105,4 +139,4 @@
 
     <script src="/static/app.js"></script>
 </body>
-</html>
+                                        </html>

@@ -2,7 +2,7 @@ import re
 
 from passlib.context import CryptContext
 
-from database import get_db
+from .database import get_db
 
 password_context = CryptContext(
     schemes=["pbkdf2_sha256"],
@@ -38,6 +38,12 @@ def hash_password(password):
 
 
 def verify_password(password, password_hash):
+    if not isinstance(password, str):
+        return False
+
+    if not isinstance(password_hash, str):
+        return False
+
     try:
         return password_context.verify(password, password_hash)
     except (ValueError, TypeError):
@@ -65,7 +71,9 @@ def register_user(username, password, confirm_password):
             import sqlite3
 
             if isinstance(exc, sqlite3.IntegrityError):
-                raise ValueError("Username is already registered.") from exc
+                raise ValueError(
+                    "Username is already registered."
+                ) from exc
             raise
 
         return {
@@ -96,4 +104,4 @@ def authenticate_user(username, password):
     return {
         "id": user["id"],
         "username": user["username"],
-}
+        }

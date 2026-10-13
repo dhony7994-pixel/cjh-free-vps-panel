@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 
 SUPPORTED_PROVIDERS = {
     "docker",
@@ -7,65 +8,99 @@ SUPPORTED_PROVIDERS = {
 }
 
 
+def _check_command(command: str) -> bool:
+    """Check whether a required executable exists."""
+    return shutil.which(command) is not None
+
+
 def get_available_providers():
-    """Return provider information and host availability."""
+    """Detect installed provider tools on the host."""
+
+    docker_available = _check_command("docker")
+
+    kvm_available = (
+        _check_command("virsh")
+        and _check_command("qemu-system-x86_64")
+    )
+
+    sshx_available = _check_command("sshx")
 
     return [
         {
             "id": "docker",
-            "name": "Docker VPS",
-            "description": "Isolated container environment; not a full VM.",
-            "available": shutil.which("docker") is not None,
+            "name": "Docker Environment",
+            "description": "Container environment; not a full virtual machine.",
+            "available": docker_available,
             "status": (
                 "detected"
-                if shutil.which("docker")
+                if docker_available
                 else "not_installed"
             ),
         },
         {
             "id": "kvm",
             "name": "KVM Virtual Machine",
-            "description": "Full virtual machine requiring host virtualization.",
-            "available": (
-                shutil.which("virsh") is not None
-                and shutil.which("qemu-system-x86_64") is not None
-            ),
+            "description": "Virtual machine requiring host virtualization and configuration.",
+            "available": kvm_available,
             "status": (
                 "detected"
-                if (
-                    shutil.which("virsh") is not None
-                    and shutil.which("qemu-system-x86_64") is not None
-                )
+                if kvm_available
                 else "not_configured"
             ),
         },
         {
             "id": "sshx",
-            "name": "SSHX Environment",
-            "description": "Terminal environment, not a full VPS.",
-            "available": shutil.which("sshx") is not None,
+            "name": "SSHX Terminal",
+            "description": "Terminal session; not a standalone VPS.",
+            "available": sshx_available,
             "status": (
                 "detected"
-                if shutil.which("sshx")
+                if sshx_available
                 else "not_installed"
             ),
         },
     ]
 
 
-def create_vps(user_id: int, provider: str):
-    """
-    Provisioning remains disabled until a secure provider adapter
-    with resource limits and lifecycle management is configured.
-    """
+def get_provider(provider: str):
+    """Return one provider's information."""
+
+    provider = provider.strip().lower()
 
     if provider not in SUPPORTED_PROVIDERS:
         raise ValueError("Unsupported provider.")
 
+    for item in get_available_providers():
+        if item["id"] == provider:
+            return item
+
+    raise ValueError("Provider information unavailable.")
+
+
+def create_vps(user_id: int, provider: str):
+    """
+    VPS provisioning is intentionally disabled.
+
+    Detecting an installed command does not mean the host is
+    securely configured to provision isolated customer instances.
+    """
+
     if not isinstance(user_id, int) or user_id <= 0:
         raise ValueError("Invalid user ID.")
 
+    provider = provider.strip().lower()
+
+    if provider not in SUPPORTED_PROVIDERS:
+        raise ValueError("Unsupported provider.")
+
+    info = get_provider(provider)
+
+    if not info["available"]:
+        raise RuntimeError(
+            f"{info['name']} is not installed or configured."
+        )
+
     raise NotImplementedError(
-        f"{provider} provisioning is not configured. "
+        f"{info['name']} provisioning is not configured. "
         "No VPS has been created."
     )

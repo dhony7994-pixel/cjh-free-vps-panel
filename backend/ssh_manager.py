@@ -1,6 +1,5 @@
-import os
 import shutil
-import subprocess
+import re
 
 
 def check_ssh_available():
@@ -18,13 +17,22 @@ def get_connection_info(host: str, port: int, username: str):
     Return SSH connection details.
     This does not create a VPS or start an SSH server.
     """
-    if not host or any(char.isspace() for char in host):
+    if not isinstance(host, str) or not host:
         raise ValueError("Invalid host.")
+
+    if any(char.isspace() for char in host):
+        raise ValueError("Invalid host.")
+
+    if not isinstance(port, int) or isinstance(port, bool):
+        raise ValueError("Invalid SSH port.")
 
     if not 1 <= port <= 65535:
         raise ValueError("Invalid SSH port.")
 
-    if not username or not username.replace("_", "").isalnum():
+    if not isinstance(username, str):
+        raise ValueError("Invalid SSH username.")
+
+    if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,31}", username):
         raise ValueError("Invalid SSH username.")
 
     return {
@@ -33,7 +41,7 @@ def get_connection_info(host: str, port: int, username: str):
         "username": username,
         "command": f"ssh -p {port} {username}@{host}",
         "ssh_client_available": check_ssh_available(),
-        "sshx_available": check_sshx_available()
+        "sshx_available": check_sshx_available(),
     }
 
 
@@ -47,5 +55,5 @@ def get_sshx_status():
             "SSHX executable detected."
             if executable
             else "SSHX is not installed."
-        )
-  }
+        ),
+    }

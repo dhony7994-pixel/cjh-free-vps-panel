@@ -9,27 +9,26 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.sessions import SessionMiddleware
 
-from .database import init_db, get_db
-from .auth import register_user, authenticate_user
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
+
+# Load environment variables before reading settings or importing backend modules.
+load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 APP_PORT = int(os.getenv("APP_PORT", "6769"))
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "true").lower() == "true"
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY", "")
-
-if len(SECRET_KEY) < 32:
+if len(SECRET_KEY) < 32 or SECRET_KEY == "REPLACE_WITH_A_RANDOM_SECRET":
     raise RuntimeError(
-        "SECRET_KEY must be a random secret of at least 32 characters."
+        "Set a secure, random SECRET_KEY of at least 32 characters in .env."
     )
 
 if not FRONTEND_DIR.is_dir():
     raise RuntimeError("Frontend directory not found.")
+
+from .database import init_db, get_db
+from .auth import register_user, authenticate_user
 
 app = FastAPI(title="CJH FREE VPS")
 
@@ -108,6 +107,7 @@ def register(data: RegisterRequest):
             data.password,
             data.confirm_password,
         )
+
         return {
             "message": "Account created. Please log in.",
             "user": user,
@@ -128,10 +128,13 @@ def register(data: RegisterRequest):
 
 @app.post("/api/login")
 def login(data: LoginRequest, request: Request):
-    user = authenticate_user(
-        data.username,
-        data.password,
-    )
+    try:
+        user = authenticate_user(
+            data.username,
+            data.password,
+        )
+    except ValueError:
+        user = None
 
     if not user:
         raise HTTPException(
@@ -159,4 +162,64 @@ def list_vps(request: Request):
     user = current_user(request)
 
     with get_db() as db:
-        rows = db.execute
+        rows = db.execute(
+            """
+            SELECT id, provider, status, created_at
+            FROM vps_instances
+            WHERE user_id = ?
+            ORDER BY id DESC
+            """,
+            (user["id"],),
+        ).fetchall()
+
+    return {
+        "instances": [
+            {
+                "id": row["id"],
+                "provider": row["provider"],
+                "status": row["status"],
+                "created_at": row["created_at"],
+            }
+            for row in rows
+        ]
+    }
+
+
+@app.post("/api/vps/create")
+def create_vps(data: CreateVPSRequest, request: Request):
+    user = current_user(request)
+
+    provider = data.provider.strip().lower()
+
+    if provider not in {"docker", "kvm", "sshx"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported VPS provider.",
+        )
+
+    # Fail safely: real VPS provisioning is not implemented yet.
+    # Do not insert a fake VPS record or claim that one was created.
+    with get_db() as db:
+        existing = db.execute(
+            """
+            SELECT id
+            FROM vps_instances
+            WHERE user_id = ?
+            LIMIT 1
+            """,
+            (user["id"],),
+        ).fetchone()
+
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail="Your account already has a VPS.",
+        )
+
+    raise HTTPException(
+        status_code=501,
+        detail=(
+            f"{provider.upper()} provisioning is not configured yet. "
+            "No VPS has been created."
+        ),
+)

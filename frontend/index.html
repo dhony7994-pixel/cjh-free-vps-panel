@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CJH FREE VPS</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="logo">C</div>
+            <div>
+                <h2>CJH FREE VPS</h2>
+                <small>CHACHAJI HOSTING</small>
+            </div>
+        </div>
+        <span class="status">● PANEL</span>
+    </header>
+
+    <main class="container">
+
+        <section id="auth-section" class="card">
+            <h1 id="auth-title">Welcome Back</h1>
+            <p class="muted">Sign in to your CJH account.</p>
+
+            <div id="register-fields" hidden>
+                <label for="confirm-password">Confirm Password</label>
+                <input id="confirm-password"
+                       type="password"
+                       minlength="10"
+                       autocomplete="new-password"
+                       placeholder="Confirm password">
+            </div>
+
+            <label for="username">Username</label>
+            <input id="username"
+                   type="text"
+                   minlength="3"
+                   maxlength="32"
+                   autocomplete="username"
+                   placeholder="Enter username">
+
+            <label for="password">Password</label>
+            <input id="password"
+                   type="password"
+                   minlength="10"
+                   maxlength="128"
+                   autocomplete="current-password"
+                   placeholder="Enter password">
+
+            <button id="auth-button" type="button" onclick="authenticate()">
+                Login
+            </button>
+
+            <p id="auth-message" class="message" role="status"></p>
+
+            <p class="switch">
+                <span id="switch-text">Don't have an account?</span>
+                <button class="text-button"
+                        type="button"
+                        onclick="toggleAuth()"
+                        id="switch-button">Register</button>
+            </p>
+        </section>
+
+        <section id="dashboard" hidden>
+            <div class="welcome">
+                <div>
+                    <p class="muted">YOUR DASHBOARD</p>
+                    <h1>My VPS</h1>
+                    <p id="welcome-user"></p>
+                </div>
+                <button class="secondary" onclick="logout()">Logout</button>
+            </div>
+
+            <div id="empty-state" class="card">
+                <div class="server-icon">▣</div>
+                <h2>No VPS yet</h2>
+                <p class="muted">
+                    Create your first environment to get started.
+                </p>
+
+                <label for="provider">Environment Type</label>
+                <select id="provider">
+                    <option value="docker">Docker Environment</option>
+                    <option value="kvm">KVM Virtual Machine</option>
+                    <option value="sshx">SSHX Terminal</option>
+                </select>
+
+                <button type="button" onclick="createVPS()">
+                    CREATE VPS
+                </button>
+
+                <p id="vps-message" class="message" role="status"></p>
+            </div>
+
+            <div id="vps-list"></div>
+
+            <p class="footer">CJH FREE VPS · Chachaji Hosting</p>
+        </section>
+
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
